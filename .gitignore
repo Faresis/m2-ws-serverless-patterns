@@ -7,6 +7,10 @@
 # python
 src/users/python
 
+# authorizer
+src/authorizer
+!src/authorizer/*.tf
+
 # .tfstate files
 *.tfstate
 *.tfstate.*

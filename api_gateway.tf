@@ -7,7 +7,22 @@ resource "aws_api_gateway_rest_api" "rest_api" {
     info = {
       title   = "rest_api"
       version = "1.0"
-    }   
+    }
+    components = {
+      securitySchemes = {
+        lambdaTokenAuthorizer = {
+          type = "apiKey"
+          name = "Authorization"
+          in = "header"
+          x-amazon-apigateway-authtype = "custom"
+          x-amazon-apigateway-authorizer = {
+            authorizerUri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:${aws_lambda_function.userfunctions_lambda_auth.function_name}/invocations"
+            authorizerResultTtlInSeconds = 300
+            type = "token"
+          }
+        }
+      }
+    }    
     paths = {
       "/users" = {
         get = {
@@ -115,6 +130,15 @@ resource "aws_lambda_permission" "allow_apigateway" {
   source_arn    = "${aws_api_gateway_rest_api.rest_api.execution_arn}/*/*/*"
 }
 
+resource "aws_lambda_permission" "allow_apigateway_lambda_auth" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.userfunctions_lambda_auth.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.rest_api.execution_arn}/authorizers/*"
+}
+
 output "APIEndpoint" {
   value = aws_api_gateway_stage.rest_api.invoke_url
 }
+
