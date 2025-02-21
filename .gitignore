@@ -7,6 +7,9 @@
 # python
 src/users/python
 
+# pycache
+**/__pycache__
+
 # authorizer
 src/authorizer
 !src/authorizer/*.tf
