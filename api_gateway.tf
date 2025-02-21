@@ -7,10 +7,15 @@ resource "aws_api_gateway_rest_api" "rest_api" {
     info = {
       title   = "rest_api"
       version = "1.0"
-    }
+    }   
     paths = {
       "/users" = {
         get = {
+          security = [ 
+            {
+              "lambdaTokenAuthorizer": []
+            }
+          ]
           x-amazon-apigateway-integration = {
             httpMethod           = "POST"
             type                 = "aws_proxy"
@@ -18,6 +23,11 @@ resource "aws_api_gateway_rest_api" "rest_api" {
           }
         },
         post = {
+          security = [ 
+            {
+              "lambdaTokenAuthorizer": []
+            }
+          ]
           x-amazon-apigateway-integration = {
             httpMethod           = "POST"
             type                 = "aws_proxy"
@@ -26,7 +36,17 @@ resource "aws_api_gateway_rest_api" "rest_api" {
         }
       },
       "/users/{userid}" = {
+        security = [ 
+          {
+            "lambdaTokenAuthorizer": []
+          }
+        ]
         put = {
+          security = [ 
+            {
+              "lambdaTokenAuthorizer": []
+            }
+          ]           
           x-amazon-apigateway-integration = {
             httpMethod           = "POST"
             type                 = "aws_proxy"
@@ -34,6 +54,11 @@ resource "aws_api_gateway_rest_api" "rest_api" {
           }
         },
         get = {
+          security = [ 
+            {
+              "lambdaTokenAuthorizer": []
+            }
+          ]          
           x-amazon-apigateway-integration = {
             httpMethod           = "POST"
             type                 = "aws_proxy"
@@ -41,6 +66,11 @@ resource "aws_api_gateway_rest_api" "rest_api" {
           }
         },
         delete = {
+          security = [ 
+            {
+              "lambdaTokenAuthorizer": []
+            }
+          ]          
           x-amazon-apigateway-integration = {
             httpMethod           = "POST"
             type                 = "aws_proxy"
