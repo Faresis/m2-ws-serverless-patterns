@@ -4,6 +4,9 @@
 .terraform/*
 **/.terraform/*
 
+# python
+src/users/python
+
 # .tfstate files
 *.tfstate
 *.tfstate.*
