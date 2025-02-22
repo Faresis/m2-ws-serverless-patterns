@@ -1,3 +1,4 @@
+
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
@@ -120,6 +121,21 @@ resource "aws_api_gateway_stage" "rest_api" {
   rest_api_id = aws_api_gateway_rest_api.rest_api.id
   stage_name = "Prod"
   xray_tracing_enabled = true
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.access_logs.arn
+    format          = jsonencode({
+      requestId         = "$context.requestId"
+      ip                = "$context.identity.sourceIp"
+      requestTime       = "$context.requestTime"
+      httpMethod        = "$context.httpMethod"
+      routeKey          = "$context.routeKey"
+      status            = "$context.status"
+      protocol          = "$context.protocol"
+      integrationStatus = "$context.integrationStatus"
+      integrationLatency = "$context.integrationLatency"
+      responseLength    = "$context.responseLength"
+    })
+  }
 }
 
 resource "aws_lambda_permission" "allow_apigateway" {
@@ -138,7 +154,39 @@ resource "aws_lambda_permission" "allow_apigateway_lambda_auth" {
   source_arn    = "${aws_api_gateway_rest_api.rest_api.execution_arn}/authorizers/*"
 }
 
+resource "aws_iam_role" "api_logging_role" {
+  name               = "ApiLoggingRole"
+  assume_role_policy = data.aws_iam_policy_document.api_logging_role_assume_role_policy.json
+  path               = "/"
+}
+
+resource "aws_iam_role_policy_attachment" "api_logging_role_policy_attachment" {
+  role       = aws_iam_role.api_logging_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+}
+
+data "aws_iam_policy_document" "api_logging_role_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["apigateway.amazonaws.com"]
+    }
+    effect = "Allow"
+  }
+}
+
+resource "aws_api_gateway_account" "settings" {
+  cloudwatch_role_arn = aws_iam_role.api_logging_role.arn
+}
+
+resource "aws_cloudwatch_log_group" "access_logs" {
+  name              = "/${var.workshop_stack_base_name}/APIAccessLogs"
+  retention_in_days = 30
+
+  depends_on = [aws_iam_role.api_logging_role]
+}
+
 output "APIEndpoint" {
   value = aws_api_gateway_stage.rest_api.invoke_url
 }
-
