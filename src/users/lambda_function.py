@@ -12,7 +12,7 @@ USERS_TABLE = os.getenv('USERS_TABLE', None)
 dynamodb = boto3.resource('dynamodb')
 ddbTable = dynamodb.Table(USERS_TABLE)
 
-def lambda_handler(event, context):
+def lambda_handlr(event, context):
   route_key = f"{event['httpMethod']} {event['resource']}"
 
   # Set default response, override with data from DynamoDB if any
